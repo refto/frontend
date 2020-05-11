@@ -1,6 +1,6 @@
 <template>
   <a-layout>
-    <a-layout-header>
+    <a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
       <a-select
         size="large"
         mode="multiple"
@@ -19,14 +19,13 @@
         </a-select-option>
       </a-select>
     </a-layout-header>
-
-      <a-layout-content>
+      <a-layout-content :style="{ marginTop: '64px' }">
         <div style="background-color: #ececec; padding: 20px;">
-        <a-row :gutter="16">
+        <a-row :gutter="16" type="flex"  align="top">
           <a-col :span="6"  v-for="d in data" >
-        <a-card  style="margin-bottom: 20px;" :headStyle="{'font-weight':'bold'}">
+        <a-card style="margin-bottom: 20px;" :headStyle="{'font-weight':'bold'}">
           <a slot="extra" v-if="d.type !== ''"><a-tag color="pink">{{d.data.type}}</a-tag></a>
-<!--          <a slot="extra"><a-icon type="edit" /></a>-->
+          <a slot="extra" :href="editAddr(d.token)"><a-icon type="edit"  title="Edit this" /></a>
           <a slot="title" :href="d.data.home_addr">{{d.data.title}}</a>
           <p>{{d.data.description}}</p>
           <a-button-group v-if="topicsDiff(d.data.topics).length > 0">
@@ -35,13 +34,11 @@
             </a-button>
           </a-button-group>
         </a-card>
-
           </a-col>
         </a-row>
         </div>
-
       </a-layout-content>
-    <a-layout-footer>footer</a-layout-footer>
+    <a-layout-footer>refto.dev wip</a-layout-footer>
   </a-layout>
 </template>
 <script>
@@ -56,6 +53,7 @@
         },
 
         beforeMount() {
+            this.setSelectedTopicsFromPath()
             this.loadData()
         },
 
@@ -92,6 +90,7 @@
             handleTopicChange(selectedTopics) {
                 this.topics = []
                 this.selectedTopics = selectedTopics;
+                this.setPathFromSelectedTopics()
                 this.loadData()
             },
 
@@ -105,7 +104,36 @@
 
             addTopic(t) {
                 this.selectedTopics.push({key: t, label: t})
+                this.setPathFromSelectedTopics()
                 this.loadData()
+            },
+
+            setSelectedTopicsFromPath() {
+                let pathTopics = this.$route.params.pathMatch
+                if (pathTopics === "") {
+                    return
+                }
+                const topics = pathTopics.split(',');
+                for (let i = 0; i < topics.length; i++) {
+                    this.selectedTopics.push({key: topics[i], label: topics[i]})
+                }
+            },
+
+            setPathFromSelectedTopics() {
+                let sTopics = []
+                for (let i = 0; i < this.selectedTopics.length; i++) {
+                    sTopics.push(encodeURIComponent(this.selectedTopics[i].key))
+                }
+
+                history.pushState(
+                    {},
+                    null,
+                    "/" + sTopics.join(',')
+                )
+            },
+
+            editAddr(name) {
+                return "https://github.com/refto/data/edit/master/" + name + ".yaml"
             },
         },
 
@@ -115,7 +143,17 @@
 </script>
 
 <style>
-  .ant-card-actions li {
-    margin: -1px ;
+  .ant-card {
+    box-shadow: inset 0 0 0 2px white;
+    border: none;
+  }
+  .ant-card:hover {
+    box-shadow: inset 0 0 0 2px #168be5, 0 0 5px rgba(0, 0, 0, 0.2);
+  }
+  .ant-card-head {
+    border-bottom: none;
+  }
+  .ant-card-body {
+    padding-top: 0;
   }
 </style>
