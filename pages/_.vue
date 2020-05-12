@@ -25,12 +25,16 @@
           <a-col :span="6"  v-for="d in data" >
         <a-card style="margin-bottom: 20px;" :headStyle="{'font-weight':'bold'}">
           <a slot="extra" v-if="d.type !== ''"><a-tag color="pink">{{d.data.type}}</a-tag></a>
-          <a slot="extra" :href="editAddr(d.token)"><a-icon type="edit"  title="Edit this" /></a>
-          <a slot="title" :href="d.data.home_addr">{{d.data.title}}</a>
+          <a slot="extra" :href="editAddr(d.token)"  target="_blank"><a-icon type="edit"  title="Edit this" /></a>
+          <a slot="title" :href="d.data.home_addr"  target="_blank">{{d.data.title}}</a>
+          <a-avatar v-if="d.data.picture_addr != null" shape="square" :size="64" :src="d.data.picture_addr" />
           <p>{{d.data.description}}</p>
+          <ul v-if="d.data.links != null && d.data.links.length > 0" class="data-links">
+            <li v-for="l in d.data.links"><a-icon v-if="l.icon != null" :type="l.icon" /> <a :href="l.addr" target="_blank">{{l.label}}</a></li>
+          </ul>
           <a-button-group v-if="topicsDiff(d.data.topics).length > 0">
             <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i">
-              + {{t}}
+              +{{t}}
             </a-button>
           </a-button-group>
         </a-card>
@@ -143,6 +147,24 @@
 </script>
 
 <style>
+  .data-links {
+    margin: 0 0 20px 0;
+    padding: 0;
+    display: block;
+  }
+  .data-links li {
+    list-style: none;
+    display: inline-block;
+    margin-right: 10px;
+  }
+  .ant-avatar {
+    float: right;
+    margin-left: 10px;
+    margin-bottom: 10px;
+  }
+  body {
+    font-family: 'Roboto', sans-serif;
+  }
   .ant-card {
     box-shadow: inset 0 0 0 2px white;
     border: none;
