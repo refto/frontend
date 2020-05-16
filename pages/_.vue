@@ -22,15 +22,15 @@
       <a-layout-content :style="{ marginTop: '64px' }">
         <div style="background-color: #ececec; padding: 20px;">
         <a-row :gutter="16" type="flex"  align="top">
-          <a-col :span="6"  v-for="d in data" >
-        <a-card style="margin-bottom: 20px;" :headStyle="{'font-weight':'bold'}">
+          <a-col :span="6"  v-for="d in data" :key="d.token">
+        <a-card style="margin-bottom: 20px;" :headStyle="{'font-weight':300, 'font-size': '22px'}">
           <a slot="extra" v-if="d.type !== ''"><a-tag color="pink">{{d.data.type}}</a-tag></a>
           <a slot="extra" :href="editAddr(d.token)"  target="_blank"><a-icon type="edit"  title="Edit this" /></a>
           <a slot="title" :href="d.data.home_addr"  target="_blank">{{d.data.title}}</a>
           <a-avatar v-if="d.data.picture_addr != null" shape="square" :size="64" :src="d.data.picture_addr" />
           <p>{{d.data.description}}</p>
           <ul v-if="d.data.links != null && d.data.links.length > 0" class="data-links">
-            <li v-for="l in d.data.links"><a-icon v-if="l.icon != null" :type="l.icon" /> <a :href="l.addr" target="_blank">{{l.label}}</a></li>
+            <li v-for="l in d.data.links"><a-icon :type="l.icon == null ? 'link' : l.icon" /> <a :href="l.addr" target="_blank">{{l.label}}</a></li>
           </ul>
           <a-button-group v-if="topicsDiff(d.data.topics).length > 0">
             <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i">
