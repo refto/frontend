@@ -23,17 +23,12 @@
         <div style="background-color: #ececec; padding: 20px;">
         <a-row :gutter="16" type="flex"  align="top">
           <a-col :span="6"  v-for="d in data" :key="d.token">
-        <a-card style="margin-bottom: 20px;" :headStyle="{'font-weight':300, 'font-size': '22px'}">
-          <a slot="extra" v-if="d.type !== ''"><a-tag color="pink">{{d.data.type}}</a-tag></a>
+        <a-card>
           <a slot="extra" :href="editAddr(d.token)"  target="_blank"><a-icon type="edit"  title="Edit this" /></a>
-          <a slot="title" :href="d.data.home_addr"  target="_blank">
+          <a slot="title" :href="d.data.home_addr" :title="d.data.title"  target="_blank">
             <a-icon v-if="d.data.home_addr.startsWith('https://github.com')" type="github" />
             {{d.data.title}}</a>
-          <a-avatar v-if="d.data.picture_addr != null" shape="square" :size="100" :src="d.data.picture_addr" />
-          <p>{{d.data.description}}</p>
-          <ul v-if="d.data.links != null && d.data.links.length > 0" class="data-links">
-            <li v-for="l in d.data.links"><a-icon :type="l.icon == null ? 'link' : l.icon" /> <a :href="l.addr" target="_blank">{{l.label}}</a></li>
-          </ul>
+          <component v-bind:is="components[d.type]" :data="d.data"></component>
           <a-button-group v-if="topicsDiff(d.data.topics).length > 0">
             <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i">
               +{{t}}
@@ -48,14 +43,28 @@
   </a-layout>
 </template>
 <script>
+    import GenericType from "../components/data-types/Generic.vue";
+    import BookType from "../components/data-types/Book.vue";
+
     export default {
         data() {
             return {
                 data: [],
                 topics: [],
                 selectedTopics: [],
-                loading: false
+                loading: false,
+
+                components: {
+                    '': GenericType,
+                    'generic': GenericType,
+                    'book': BookType,
+                }
             };
+        },
+
+        components: {
+            GenericType,
+            BookType,
         },
 
         beforeMount() {
@@ -163,6 +172,8 @@
     float: right;
     margin-left: 10px;
     margin-bottom: 10px;
+    width: 100px;
+    height: initial;
   }
   body {
     font-family: 'Roboto', sans-serif;
@@ -170,12 +181,15 @@
   .ant-card {
     box-shadow: inset 0 0 0 2px white;
     border: none;
+    margin-bottom: 20px;
   }
   .ant-card:hover {
     box-shadow: inset 0 0 0 2px #168be5, 0 0 5px rgba(0, 0, 0, 0.2);
   }
   .ant-card-head {
     border-bottom: none;
+    font-weight: 300;
+    font-size: 22px;
   }
   .ant-card-body {
     padding-top: 0;
