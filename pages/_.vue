@@ -51,7 +51,21 @@
         </div>
 
       </a-layout-content>
-    <a-layout-footer>refto.dev wip</a-layout-footer>
+    <a-layout-footer>
+      <a-row>
+        <a-col :span="12">
+          refto.dev<br>
+          work in progress
+        </a-col>
+        <a-col :span="12">
+          <ul>
+            <li><a href="https://github.com/refto/data" target="_blank">Data source</a></li>
+            <li><a href="https://github.com/refto/frontend" target="_blank">Frontend source</a></li>
+            <li><a href="https://github.com/refto/server" target="_blank">Server source</a></li>
+          </ul>
+        </a-col>
+      </a-row>
+    </a-layout-footer>
   </a-layout>
 </template>
 <script>
@@ -238,6 +252,12 @@
   }
   .ant-card-body {
     padding-top: 0;
+  }
+  .ant-layout-footer {
+   background:  #001529;
+  }
+  .ant-layout-footer *{
+   color:  #ececec;
   }
   #logo {
     float:left;
