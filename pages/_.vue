@@ -1,23 +1,27 @@
 <template>
   <a-layout>
     <a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
-      <a-select
-        size="large"
-        mode="multiple"
-        style="width: 100%"
-        allowClear
-        showArrow
-        label-in-value
-        :value="selectedTopics"
-        :loading="loading"
-        placeholder="Select topics..."
-        @change="handleTopicChange"
-      >
-        <a-spin v-if="loading" slot="notFoundContent" size="small" />
-        <a-select-option v-for="item in topics" :key="item" :value="item">
-          {{ item }}
-        </a-select-option>
-      </a-select>
+      <div>
+        <div id="logo">refto</div>
+        <div id="searchBox">
+          <a-select
+            size="large"
+            mode="multiple"
+            style="width: 100%"
+            allowClear
+            label-in-value
+            :value="selectedTopics"
+            :loading="loading"
+            placeholder="Select topic..."
+            @change="handleTopicChange"
+          >
+            <a-spin v-if="loading" slot="notFoundContent" size="small" />
+            <a-select-option v-for="item in topics" :key="item" :value="item">
+              {{ item }}
+            </a-select-option>
+          </a-select>
+        </div>
+      </div>
     </a-layout-header>
       <a-layout-content :style="{ marginTop: '64px' }">
         <div style="background-color: #ececec; padding: 20px;">
@@ -37,7 +41,15 @@
         </a-card>
           </a-col>
         </a-row>
+          <a-row>
+            <a-col :span="24">
+              <div v-if="this.data.length < totalCount" style="text-align: center">
+                <a-button @click="loadMore()" type="primary" size="large">Load more...</a-button>
+              </div>
+            </a-col>
+          </a-row>
         </div>
+
       </a-layout-content>
     <a-layout-footer>refto.dev wip</a-layout-footer>
   </a-layout>
@@ -53,7 +65,8 @@
                 topics: [],
                 selectedTopics: [],
                 loading: false,
-
+                totalCount: 0,
+                page: 1,
                 components: {
                     '': GenericType,
                     'generic': GenericType,
@@ -77,7 +90,7 @@
                 this.loading = true
                 // todo: there must be a better way to searialize array into query string
                 let path = '/entities/'
-                let qs = []
+                let qs = ["page="+this.page]
                 if (this.selectedTopics.length > 0) {
                     for (let i = 0; i < this.selectedTopics.length; i++) {
                         qs[i] = "topics=" + this.selectedTopics[i].key;
@@ -89,8 +102,14 @@
 
                 try {
                     await this.$axios.$get(path).then((resp) => {
-                        this.data = resp.entities
+                        if (this.page === 1) {
+                            this.data = resp.entities
+                        } else {
+                            this.data = this.data.concat(resp.entities)
+                        }
+
                         this.topics = resp.topics
+                        this.totalCount = resp.entities_count
                     })
                 } catch (e) {
                     this.$notify({
@@ -104,6 +123,7 @@
 
             handleTopicChange(selectedTopics) {
                 this.topics = []
+                this.page = 1
                 this.selectedTopics = selectedTopics;
                 this.setPathFromSelectedTopics()
                 this.loadData()
@@ -118,6 +138,7 @@
             },
 
             addTopic(t) {
+                this.page = 1
                 this.selectedTopics.push({key: t, label: t})
                 this.setPathFromSelectedTopics()
                 this.loadData()
@@ -169,6 +190,11 @@
 
                 return "link"
             },
+
+            loadMore() {
+                this.page++
+                this.loadData()
+            },
         },
 
         computed: {
@@ -212,5 +238,16 @@
   }
   .ant-card-body {
     padding-top: 0;
+  }
+  #logo {
+    float:left;
+    width: 240px;
+    color: #ececec;
+    font-size: 95px;
+    font-weight: 700;
+  }
+  #searchBox {
+    float:left;
+    min-width: 200px;
   }
 </style>
