@@ -24,9 +24,9 @@
         <a-row :gutter="16" type="flex"  align="top">
           <a-col :span="6"  v-for="d in data" :key="d.token">
         <a-card>
-          <a slot="extra" :href="editAddr(d.token)"  target="_blank"><a-icon type="edit"  title="Edit this" /></a>
+          <a slot="extra" :href="editAddr(d.token, d.type)"  target="_blank"><a-icon type="edit"  title="Edit this" /></a>
           <a slot="title" :href="d.data.home_addr" :title="d.data.title"  target="_blank">
-            <a-icon v-if="d.data.home_addr.startsWith('https://github.com')" type="github" />
+            <a-icon :type="getIcon(d.data, d.type)" />
             {{d.data.title}}</a>
           <component v-bind:is="components[d.type]" :data="d.data"></component>
           <a-button-group v-if="topicsDiff(d.data.topics).length > 0">
@@ -147,8 +147,27 @@
                 )
             },
 
-            editAddr(name) {
-                return "https://github.com/refto/data/edit/master/" + name + ".yaml"
+            editAddr(name, type) {
+                let t = ""
+                if (type !== "") {
+                    t = "." + type
+                }
+                if (name.startsWith("/")) {
+                    name = name.slice(1)
+                }
+                return "https://github.com/refto/data/edit/master/" + name + t + ".yaml"
+            },
+
+            getIcon(data, type) {
+                if (type === 'book') {
+                    return 'book'
+                }
+
+                if (data.home_addr.startsWith('https://github.com')) {
+                    return 'github'
+                }
+
+                return "link"
             },
         },
 
