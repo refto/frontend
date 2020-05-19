@@ -25,8 +25,8 @@
     </a-layout-header>
       <a-layout-content :style="{ marginTop: '64px' }">
         <div style="background-color: #ececec; padding: 20px;">
-        <a-row :gutter="16" type="flex"  align="top">
-          <a-col :span="6"  v-for="d in data" :key="d.token">
+        <a-row :gutter="16" type="flex"  align="top" v-masonry  transition-duration="1s" item-selector=".masonryCard">
+          <a-col :span="6" v-masonry-tile  v-for="d in data" :key="d.token" class="masonryCard">
         <a-card>
           <a slot="extra" :href="editAddr(d.token, d.type)"  target="_blank"><a-icon type="edit"  title="Edit this" /></a>
           <a slot="title" :href="d.data.home_addr" :title="d.data.title"  target="_blank">
@@ -43,7 +43,7 @@
         </a-row>
           <a-row>
             <a-col :span="24">
-              <div v-if="this.data.length < totalCount" style="text-align: center">
+              <div v-if="this.data.length < totalCount && !this.loading" style="text-align: center">
                 <a-button @click="loadMore()" type="primary" size="large">Load more...</a-button>
               </div>
             </a-col>
@@ -58,10 +58,10 @@
           work in progress
         </a-col>
         <a-col :span="12">
-          <ul>
-            <li><a href="https://github.com/refto/data" target="_blank">Data source</a></li>
-            <li><a href="https://github.com/refto/frontend" target="_blank">Frontend source</a></li>
-            <li><a href="https://github.com/refto/server" target="_blank">Server source</a></li>
+          <ul id="footerLinks">
+            <li><a-icon type="github" /> <a href="https://github.com/refto/data" target="_blank">Data source</a></li>
+            <li><a-icon type="github" /> <a href="https://github.com/refto/frontend" target="_blank">Frontend source</a></li>
+            <li><a-icon type="github" /> <a href="https://github.com/refto/server" target="_blank">Server source</a></li>
           </ul>
         </a-col>
       </a-row>
@@ -269,5 +269,20 @@
   #searchBox {
     float:left;
     min-width: 200px;
+  }
+  #footerLinks{
+    font-size: 16px;
+  }
+  #footerLinks li{
+    list-style: none;
+    padding: 5px;
+  }
+  #footerLinks li a{
+    color: #00ace5;
+    text-decoration: underline;
+  }
+  #footerLinks li a:hover{
+    color: white;
+    text-decoration: none;
   }
 </style>

@@ -10,10 +10,7 @@
     </span>
     </p>
     <p>{{data.description}}</p>
-    <a-row style="margin-bottom: 20px">
-      <a-col  :span="12">{{ data.publish_date }}</a-col>
-      <a-col :span="12" style="text-align: right">{{ data.price }}</a-col>
-    </a-row>
+      <p>{{ data.publish_date }}</p>
     <ul v-if="data.links != null && data.links.length > 0" class="data-links">
       <li v-for="l in data.links"><a-icon :type="l.icon == null ? 'link' : l.icon" /> <a :href="l.addr" target="_blank">{{l.label}}</a></li>
     </ul>
