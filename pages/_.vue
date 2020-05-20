@@ -26,7 +26,7 @@
       <a-layout-content :style="{ marginTop: '64px' }">
         <div style="background-color: #ececec; padding: 20px;">
         <a-row :gutter="16" type="flex"  align="top" v-masonry  transition-duration="1s" item-selector=".masonryCard">
-          <a-col :span="6" v-masonry-tile  v-for="d in data" :key="d.token" class="masonryCard">
+          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6"   v-masonry-tile  v-for="d in data" :key="d.token" class="masonryCard">
         <a-card>
           <a slot="extra" :href="editAddr(d.token, d.type)"  target="_blank"><a-icon type="edit"  title="Edit this" /></a>
           <a slot="title" :href="d.data.home_addr" :title="d.data.title"  target="_blank">
