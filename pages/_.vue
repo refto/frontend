@@ -1,4 +1,5 @@
 <template>
+<!--  Don't pretend that you are dev by looking at source code -->
   <a-layout>
     <a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
       <div>
@@ -53,6 +54,16 @@
           </a-button-group>
         </a-card>
           </a-col>
+          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6"   v-masonry-tile  class="masonryCard" v-if="this.data.length >= totalCount && !this.loading">
+            <a-card id="outro">
+              <div slot="title">Not satisfied?</div>
+              <a-avatar shape="square" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfULlhWZCclULsqfSiaUl5uwYNefsF45MEMesbKVZN6_5dQLxjuQ&s" size="120" />
+              <p>If you'll find that is something missing here or not correct - feel free to <a href="https://github.com/refto/data#how-to-contribute" target="_blank">fix it by yourself</a>.</p>
+                <p>To busy to contribute? Simply <a href="https://github.com/refto/data/issues/new"  target="_blank">open an issue</a> about what need to be fixed, we'll take care of it.</p>
+
+              <p>Thank you!</p>
+            </a-card>
+          </a-col>
         </a-row>
           <a-row>
             <a-col :span="24">
@@ -84,6 +95,7 @@
 <script>
     import GenericType from "../components/data-types/Generic";
     import BookType from "../components/data-types/Book";
+    import PersonType from "../components/data-types/Person";
 
     export default {
         data() {
@@ -98,6 +110,7 @@
                     '': GenericType,
                     'generic': GenericType,
                     'book': BookType,
+                    'person': PersonType,
                 }
             };
         },
@@ -105,6 +118,7 @@
         components: {
             GenericType,
             BookType,
+            PersonType,
         },
 
         beforeMount() {
@@ -137,14 +151,6 @@
 
                         this.topics = resp.topics
                         this.totalCount = resp.entities_count
-
-                        if (this.selectedTopics.length < 1) {
-                            // this.data = this.data.concat([{type: '', data:{
-                            //     title: "refto.dev",
-                            //     description: "refto.dev is a collection of anything that is useful to software developers. The data source is stored on github and anyone is welcome to contribute.",
-                            //     home_addr: "refto.dev is a collection of anything that is useful to software developers. The data source is stored on github and anyone is welcome to contribute.",
-                            // }}])
-                        }
                     })
                 } catch (e) {
                     this.$notify({
@@ -217,6 +223,9 @@
             getIcon(data, type) {
                 if (type === 'book') {
                     return 'book'
+                }
+                if (type === 'person') {
+                    return 'star'
                 }
 
                 if (data.home_addr.startsWith('https://github.com')) {
@@ -328,7 +337,6 @@
     list-style: none;
     font-size: 16px;
   }
-
   @media only screen and (max-width: 1000px) {
     #logo {
       width: 80px;
