@@ -28,7 +28,7 @@
         <a-row :gutter="16" type="flex"  align="top" v-masonry  transition-duration="1s" item-selector=".masonryCard">
           <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6"   v-masonry-tile  class="masonryCard" v-if="this.selectedTopics.length < 1">
             <a-card id="intro">
-              <p><b>Welcome to refto.dev</b> - a collection of awesome creations that is useful to software developers. The <a href="https://github.com/refto/data" target="_blank">data source is stored on github</a> and anyone is welcome to contribute.
+              <p><b>Welcome to refto.dev</b> - a collection of awesome creations that is useful to software developers. The <a href="https://github.com/refto/data" target="_blank">data source is stored on GitHub</a> and anyone is welcome to contribute.
               </p>
               <ul>
                 <li><a-icon type="github" /> <a href="https://github.com/refto/data" target="_blank">Data source</a></li>
