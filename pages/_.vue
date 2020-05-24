@@ -27,7 +27,7 @@
       <a-layout-content :style="{ marginTop: '64px' }">
         <div style="background-color: #ececec; padding: 20px;">
         <a-row :gutter="16" type="flex"  align="top" v-masonry  transition-duration="1s" item-selector=".masonryCard">
-          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6"   v-masonry-tile  class="masonryCard" v-if="this.selectedTopics.length < 1 && !this.loading">
+          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6"   v-masonry-tile  class="masonryCard" v-if="this.selectedTopics.length < 1 && this.data.length !== 0">
             <a-card id="intro">
               <p><b>Welcome to refto.dev</b> - a collection of awesome creations that is useful to software developers. The <a href="https://github.com/refto/data" target="_blank">data source is stored on GitHub</a> and anyone is welcome to contribute.
               </p>
@@ -54,7 +54,7 @@
           </a-button-group>
         </a-card>
           </a-col>
-          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6"   v-masonry-tile  class="masonryCard" v-if="this.data.length >= totalCount && !this.loading">
+          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile  class="masonryCard" v-if="this.data.length >= totalCount && !this.loading">
             <a-card id="outro">
               <div slot="title">Not satisfied?</div>
               <a-avatar shape="square" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfULlhWZCclULsqfSiaUl5uwYNefsF45MEMesbKVZN6_5dQLxjuQ&s" size="120" />
@@ -78,8 +78,7 @@
     <a-layout-footer>
       <a-row>
         <a-col :span="12">
-          refto.dev<br>
-          work in progress
+          <p>refto.dev<br>work in progress</p>
         </a-col>
         <a-col :span="12">
           <ul id="footerLinks">
@@ -96,6 +95,7 @@
     import GenericType from "../components/data-types/Generic";
     import BookType from "../components/data-types/Book";
     import PersonType from "../components/data-types/Person";
+    import ConferenceType from "../components/data-types/Conference";
 
     export default {
         data() {
@@ -111,6 +111,7 @@
                     'generic': GenericType,
                     'book': BookType,
                     'person': PersonType,
+                    'conference': ConferenceType,
                 }
             };
         },
@@ -119,6 +120,7 @@
             GenericType,
             BookType,
             PersonType,
+            ConferenceType,
         },
 
         beforeMount() {
@@ -226,6 +228,9 @@
                 }
                 if (type === 'person') {
                     return 'star'
+                }
+                if (type === 'conference') {
+                    return 'bulb'
                 }
 
                 if (data.home_addr.startsWith('https://github.com')) {
