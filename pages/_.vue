@@ -17,6 +17,7 @@
             @change="handleTopicChange"
           >
             <a-spin v-if="loading" slot="notFoundContent" size="small" />
+            <a-icon slot="clearIcon" type="close" ></a-icon>
             <a-select-option v-for="item in topics" :key="item" :value="item">
               {{ item }}
             </a-select-option>
