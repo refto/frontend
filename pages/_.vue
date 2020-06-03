@@ -47,8 +47,8 @@
           <a slot="title" :href="d.data.home_addr" :title="d.data.title"  target="_blank">
             <a-icon :type="getIcon(d.data, d.type)" />
             {{d.data.title}}</a>
-          <div slot="actions">
-            <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i" class="add-topic-btn">
+          <div v-if="topicsDiff(d.data.topics).length > 0" slot="actions" >
+            <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i" class="add-topic-btn" :type="getTopicButtonType(t)" :title="'Filter by ' + t">
               +{{t}}
             </a-button>
           </div>
@@ -98,6 +98,7 @@
     import BookType from "../components/data-types/Book";
     import PersonType from "../components/data-types/Person";
     import ConferenceType from "../components/data-types/Conference";
+    import SoftwareType from "../components/data-types/Software";
 
     export default {
         data() {
@@ -114,6 +115,7 @@
                     'book': BookType,
                     'person': PersonType,
                     'conference': ConferenceType,
+                    'software': SoftwareType,
                 }
             };
         },
@@ -123,6 +125,7 @@
             BookType,
             PersonType,
             ConferenceType,
+            SoftwareType,
         },
 
         beforeMount() {
@@ -234,12 +237,23 @@
                 if (type === 'conference') {
                     return 'bulb'
                 }
+                if (type === 'software') {
+                    return 'appstore'
+                }
 
                 if (data.home_addr.startsWith('https://github.com')) {
                     return 'github'
                 }
 
                 return "link"
+            },
+
+            getTopicButtonType(val) {
+                if (val.startsWith('source:')) {
+                    return 'dashed'
+                }
+
+                return ''
             },
 
             loadMore() {
@@ -290,6 +304,7 @@
   }
   .ant-card-body {
     padding-top: 0;
+    padding-bottom: 0;
   }
   .ant-layout-footer {
    background:  #001529;
