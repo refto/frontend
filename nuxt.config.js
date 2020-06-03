@@ -1,4 +1,3 @@
-
 export default {
   mode: 'spa',
   /*
@@ -36,6 +35,9 @@ export default {
   ** Nuxt.js dev-modules
   */
   buildModules: [
+    ['@nuxtjs/google-analytics', {
+      id: process.env.GA_ID || ''
+    }]
   ],
   /*
    ** Nuxt.js modules

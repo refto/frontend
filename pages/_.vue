@@ -46,12 +46,13 @@
           <a slot="title" :href="d.data.home_addr" :title="d.data.title"  target="_blank">
             <a-icon :type="getIcon(d.data, d.type)" />
             {{d.data.title}}</a>
-          <component v-bind:is="components[d.type]" :data="d.data"></component>
-          <a-button-group v-if="topicsDiff(d.data.topics).length > 0">
-            <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i">
+          <div slot="actions">
+            <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i" class="add-topic-btn">
               +{{t}}
             </a-button>
-          </a-button-group>
+          </div>
+          <component v-bind:is="components[d.type]" :data="d.data"></component>
+
         </a-card>
           </a-col>
           <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile  class="masonryCard" v-if="this.data.length >= totalCount && !this.loading">
@@ -273,12 +274,13 @@
     font-family: 'Roboto', sans-serif;
   }
   .ant-card {
-    box-shadow: inset 0 0 0 2px white;
+    box-shadow: inset 0 0 0 2px white, 0 2px 3px rgba(0, 0, 0, 0.2);
     border: none;
     margin-bottom: 20px;
+    padding-bottom: 2px;
   }
   .ant-card:hover {
-    box-shadow: inset 0 0 0 2px #168be5, 0 0 5px rgba(0, 0, 0, 0.2);
+    box-shadow: inset 0 0 0 2px #168be5, 0 0 8px rgba(0, 0, 0, 0.2);
   }
   .ant-card-head {
     border-bottom: none;
@@ -341,6 +343,23 @@
   #intro  ul li {
     list-style: none;
     font-size: 16px;
+  }
+  .add-topic-btn {
+    margin:1px;
+    border-radius: 0;
+    padding: 0 7px;
+  }
+  .ant-card-actions > li {
+    width: auto;
+
+  }
+  .ant-card-actions {
+    margin: 2px;
+    text-align: center;
+  }
+  .ant-card-actions li {
+    margin: 2px;
+    text-align: center;
   }
   @media only screen and (max-width: 1000px) {
     #logo {

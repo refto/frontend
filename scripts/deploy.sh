@@ -19,11 +19,14 @@ remoteUser=
 remoreAddr=
 # server's API addr
 serverApiAddr=
+# Google Analytics ID
+gaID=
 
 cd $projectDir || exit
 
 # set vars for prod
 export REFTO_API_ADDR=$serverApiAddr
+export GA_ID=$gaID
 
 echo "Building frontend..."
 npm run generate
@@ -54,6 +57,7 @@ rm -rf ~/frontend-release-tmp || exit
 EOF
 
 unset REFTO_API_ADDR
+unset GA_ID
 rm -f refto-frontend.tar.gz
 
 echo "Frontend deployed!"
