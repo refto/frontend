@@ -68,8 +68,8 @@
         </a-row>
           <a-row>
             <a-col :span="24">
-              <div v-if="this.data.length < totalCount && !this.loading" style="text-align: center">
-                <a-button @click="loadMore()" type="primary" size="large">Load more...</a-button>
+              <div v-if="this.data.length < totalCount" style="text-align: center">
+                <a-button @click="loadMore()" type="primary" size="large" :loading="this.loading" shape="round"> Load more...</a-button>
               </div>
             </a-col>
           </a-row>
