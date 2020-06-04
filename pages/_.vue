@@ -269,7 +269,7 @@
 
 <style>
   .data-links {
-    margin: 0 0 20px 0;
+    margin: 0 0 7px 0;
     padding: 0;
     display: block;
   }
