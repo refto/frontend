@@ -18,7 +18,7 @@
           <a-select
             v-if="!searchMode"
             size="large"
-            mode="multiple"
+            mode="tags"
             style="width: 100%"
             allowClear
             ref="topicsInput"
@@ -48,7 +48,8 @@
         >
           <p slot="description" v-html="this.error"></p>
         </a-alert>
-        <template v-if="this.data.length == 0 && (this.selectedTopics.length > 0 || this.searchVal != '')">
+        <template
+          v-if="!this.loading && this.data.length == 0 && (this.selectedTopics.length > 0 || this.searchVal != '')">
           <a-card>
             <div slot="title">You just got nothing <!--(at least you have internet)--></div>
             <a-avatar shape="square" src="https://lovingthepregnantyou.com/wp-content/uploads/2012/06/itsOK_go_on.jpg"
@@ -81,23 +82,7 @@
               </ul>
             </a-card>
           </a-col>
-          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile class="masonryCard"
-                 v-if="this.selectedTopics.length < 1 && this.searchVal == '' && this.data.length !== 0">
-            <a-alert id="intro-help"
-              message="A little bit of help"
-              type="info"
-            >
-              <template slot="description">
-                <p>By default, filtering is by existing topics only. But here is little tricks to enable search mode:</p>
-                <ul>
-                  <li>Start search query with <code>@</code> to search in reference URLs. For example, <code>@github.com</code> will return all data that references to <code>github.com</code>. Try now: <a href="https://refto.dev/@github.com">refto.dev/@github.com</a></li>
-                  <li>Start search query with <code>~</code> to search in names. For example, <code>~elastic</code> will return all data that have <code>elastic</code> in their names. Try now: <a href="https://refto.dev/~elastic">refto.dev/~elastic</a></li>
-                  <li>Start search query with <code>.</code> to search in everywhere. For example, <code>.server</code> will return all data that contains <code>server</code>. Try now: <a href="https://refto.dev/.server">refto.dev/.server</a></li>
-                </ul>
-              <p>To return back to "topics mode" simply clear search query</p>
-              </template>
-            </a-alert>
-          </a-col>
+
 
           <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile v-for="d in data" :key="d.token"
                  class="masonryCard">
@@ -166,6 +151,23 @@
         </a-col>
       </a-row>
     </a-layout-footer>
+    <a-modal v-model="helpVisible" title="A little bit of help" :footer="null">
+      <div id="intro-help">
+        <p>To enter "search mode" start your search query with special character:</p>
+        <ul>
+          <li>Start search query with <code>@</code> to search in reference URLs. For example,
+            <code>@github.com</code> will return all data that references to <code>github.com</code>. Try now: <a
+              href="https://refto.dev/@github.com">refto.dev/@github.com</a></li>
+          <li>Start search query with <code>~</code> to search in names. For example, <code>~elastic</code> will
+            return all data that have <code>elastic</code> in their names. Try now: <a
+              href="https://refto.dev/~elastic">refto.dev/~elastic</a></li>
+          <li>Start search query with <code>*</code> to search in everywhere. For example, <code>*server</code>
+            will return all data that contains <code>server</code>. Try now: <a href="https://refto.dev/*server">refto.dev/*server</a>
+          </li>
+        </ul>
+        <p>To return back to "topics mode" simply clear search query</p>
+      </div>
+    </a-modal>
   </a-layout>
 </template>
 <script>
@@ -179,8 +181,10 @@
     // disables topics mode and triggers free search mode
     const searchAddrTrigger = "@" // search in addresses
     const searchNameTrigger = "~" // search in names
-    const searchAllTrigger = "." // search everywhere
+    const searchAllTrigger = "*" // search everywhere
     const searchTriggers = [searchAddrTrigger, searchNameTrigger, searchAllTrigger]
+
+    const helpTrigger = "?"
 
     export default {
         data() {
@@ -201,7 +205,8 @@
                 },
                 error: "",
                 searchMode: false,
-                searchVal: ""
+                searchVal: "",
+                helpVisible: false
             };
         },
 
@@ -282,15 +287,28 @@
                 this.loading = false
             },
 
-            handleTopicChange(selectedTopics) {
+            handleTopicChange(val) {
+                if (val.length > 0 && val[val.length-1].label == helpTrigger) {
+                    this.selectedTopics = val.slice(0,-1)
+                    return
+                }
+
                 this.page = 1
 
-                if (selectedTopics.length > 0 && this.isSearchTrigger(selectedTopics[0].label)) {
+                if (val.length > 0 && this.isSearchTrigger(val[0].label)) {
                     this.selectedTopics = []
                     return
                 }
+
+
+
+                let sTopics = []
+                for (let i = 0; i < this.selectedTopics.length; i++) {
+                    sTopics.push(this.selectedTopics[i].key)
+                }
+
                 this.topics = []
-                this.selectedTopics = selectedTopics;
+                this.selectedTopics = val;
                 this.setPathFromSelectedTopics()
                 this.loadData()
             },
@@ -301,6 +319,10 @@
             },
 
             handleTopicSearch(val) {
+                if (val == helpTrigger) {
+                    this.helpVisible = true
+                    return
+                }
                 if (this.isSearchTrigger(val)) {
                     this.searchVal = val
                     this.searchMode = true
@@ -541,13 +563,13 @@
     margin-bottom: 20px;
   }
 
-  #intro-help li{
+  #intro-help li {
     margin-bottom: 20px;
   }
 
-  #intro-help  code{
+  #intro-help code {
     display: inline-block;
-    background: #d2e3eb;
+    background: #e2e8fb;
     padding: 0 7px;
   }
 
