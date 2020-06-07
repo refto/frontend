@@ -86,15 +86,15 @@
 
           <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile v-for="d in data" :key="d.token"
                  class="masonryCard">
-
-            <a-card>
-              <a slot="extra" :href="editAddr(d.token, d.type)" target="_blank">
+            <a-card :class="getCardClass(d)">
+              <a v-if="d.type != 'definition-rel'" slot="extra" :href="editAddr(d.token, d.type)" target="_blank">
                 <a-icon type="edit" title="Edit this"/>
               </a>
-              <a slot="title" :href="d.data.home_addr" :title="d.data.title" target="_blank">
-                <a-icon :type="getIcon(d.data, d.type)"/>
+              <a slot="title" v-if="d.data.home_addr != null" :href="d.data.home_addr" :title="d.data.title" target="_blank">
+                <a-icon :type="getIcon(d)"/>
                 {{d.data.title}}</a>
-              <div v-if="topicsDiff(d.data.topics).length > 0" slot="actions">
+              <span slot="title" v-if="d.data.home_addr == null"> <a-icon :type="getIcon(d)"/> {{d.data.title}}</span>
+              <div v-if="d.data.topics != null && topicsDiff(d.data.topics).length > 0" slot="actions">
                 <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i"
                           class="add-topic-btn" :type="getTopicButtonType(t)" :title="'Filter by ' + t">
                   +{{t}}
@@ -107,7 +107,7 @@
           <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile class="masonryCard"
                  v-if="this.data.length >= totalCount && !this.loading && this.data.length != 0">
             <a-card id="outro">
-              <div slot="title">Not satisfied?</div>
+              <div slot="title"><a-icon type="thunderbolt" /> Not satisfied?</div>
               <a-avatar shape="square"
                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfULlhWZCclULsqfSiaUl5uwYNefsF45MEMesbKVZN6_5dQLxjuQ&s"/>
               <p>If you'll find that is something missing here or not correct - feel free to <a
@@ -176,6 +176,8 @@
     import PersonType from "../components/data-types/Person";
     import ConferenceType from "../components/data-types/Conference";
     import SoftwareType from "../components/data-types/Software";
+    import DefinitionType from "../components/data-types/Definition";
+    import DefinitionRelType from "../components/data-types/DefinitionRel";
 
     // input starting with any of this chars
     // disables topics mode and triggers free search mode
@@ -202,6 +204,8 @@
                     'person': PersonType,
                     'conference': ConferenceType,
                     'software': SoftwareType,
+                    'definition': DefinitionType,
+                    'definition-rel': DefinitionRelType,
                 },
                 error: "",
                 searchMode: false,
@@ -216,6 +220,8 @@
             PersonType,
             ConferenceType,
             SoftwareType,
+            DefinitionType,
+            DefinitionRelType,
         },
 
         beforeMount() {
@@ -278,6 +284,24 @@
 
                         this.topics = resp.topics
                         this.totalCount = resp.entities_count
+
+                        if (resp.definition != null) {
+                            let defElems = [resp.definition]
+                            let rels = resp.definition.data.relations
+                            if (rels != null) {
+                                for (let i = 0; i < rels.length; i++) {
+                                    let defChild = {
+                                        title: rels[i].title,
+                                        token:  resp.definition.token + "- " + i,
+                                        type:  "definition-rel",
+                                        data:  rels[i]
+                                    }
+                                    defElems.push(defChild)
+                                }
+                            }
+                            Array.prototype.unshift.apply(this.data, defElems);
+                        }
+
                     })
                 } catch (e) {
                     if (!e.status) {
@@ -288,8 +312,8 @@
             },
 
             handleTopicChange(val) {
-                if (val.length > 0 && val[val.length-1].label == helpTrigger) {
-                    this.selectedTopics = val.slice(0,-1)
+                if (val.length > 0 && val[val.length - 1].label == helpTrigger) {
+                    this.selectedTopics = val.slice(0, -1)
                     return
                 }
 
@@ -299,7 +323,6 @@
                     this.selectedTopics = []
                     return
                 }
-
 
 
                 let sTopics = []
@@ -347,6 +370,9 @@
             },
 
             topicsDiff(topics) {
+                if (topics == undefined) {
+                    return
+                }
                 let sTopics = []
                 for (let i = 0; i < this.selectedTopics.length; i++) {
                     sTopics.push(this.selectedTopics[i].key)
@@ -393,6 +419,9 @@
             },
 
             editAddr(name, type) {
+                if (type == "definition-rel") {
+                    return null
+                }
                 let t = ""
                 if (type !== "") {
                     t = "." + type
@@ -403,25 +432,29 @@
                 return "https://github.com/refto/data/edit/master/" + name + t + ".yaml"
             },
 
-            getIcon(data, type) {
-                if (type === 'book') {
-                    return 'book'
+            getIcon(d) {
+                if (d.data.icon != null) {
+                    return d.data.icon
                 }
-                if (type === 'person') {
+                if (d.type === 'person') {
                     return 'star'
                 }
-                if (type === 'conference') {
+                if (d.type === 'conference') {
                     return 'bulb'
                 }
-                if (type === 'software') {
+                if (d.type === 'software') {
                     return 'appstore'
                 }
 
-                if (data.home_addr.startsWith('https://github.com')) {
-                    return 'github'
+                if (d.data.home_addr != null) {
+                    if (d.data.home_addr.startsWith('https://github.com')) {
+                        return 'github'
+                    }
+
+                    return "link"
                 }
 
-                return "link"
+                return "info-circle"
             },
 
             getTopicButtonType(val) {
@@ -442,6 +475,18 @@
                     val = val.charAt(0)
                 }
                 return searchTriggers.includes(val);
+            },
+
+            getCardClass(d) {
+                // make definitions stand out a bit
+                if (d.type == 'definition') {
+                    return 'definition-card'
+                }
+                if (d.type == 'definition-rel') {
+                    return 'definition-rel-card'
+                }
+
+                return ''
             },
         },
 
@@ -469,19 +514,20 @@
     margin: 0 0 7px 0;
     padding: 0;
     display: block;
+    text-align: center;
   }
 
   .data-links li {
     list-style: none;
     display: inline-block;
-    margin-right: 10px;
+    margin: 3px 5px;
   }
 
   .ant-avatar {
     float: right;
     margin-left: 10px;
     margin-bottom: 10px;
-    width: 100px;
+    width: 120px;
     height: initial;
   }
 
@@ -490,10 +536,11 @@
   }
 
   .ant-card {
-    box-shadow: inset 0 0 0 2px white, 0 2px 3px rgba(0, 0, 0, 0.2);
+    box-shadow: none;
     border: none;
     margin-bottom: 20px;
     padding-bottom: 2px;
+    border-radius: 5px;
   }
 
   .ant-card:hover {
@@ -621,6 +668,31 @@
     width: 200px;
     height: initial;
   }
+
+  .definition-card {
+    box-shadow: inset 0 0 0 1px #9aabd1;
+  }
+
+  .definition-card .ant-card-head-title {
+    font-weight: 400;
+  }
+
+  .definition-rel-card .ant-card-head-title {
+    font-weight: 400;
+  }
+
+  .definition-card:hover {
+    box-shadow: inset 0 0 0 2px #168be5, 0 0 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .definition-rel-card {
+    box-shadow: inset 0 0 0 1px #9aabd1;
+  }
+
+  .definition-rel-card:hover {
+    box-shadow: inset 0 0 0 2px #168be5, 0 0 8px rgba(0, 0, 0, 0.2);
+  }
+
 
   @media only screen and (max-width: 1000px) {
     #logo {

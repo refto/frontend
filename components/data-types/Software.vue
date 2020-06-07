@@ -3,7 +3,7 @@
     <a-avatar v-if="data.logo_addr != null" shape="square" :src="data.logo_addr" />
     <p v-html="data.description"></p>
     <ul v-if="this.hasLinks()" class="data-links">
-      <li v-if="data.source_addr != null"><a-button :icon="sourceLinkIcon(data.source_addr)" :href="data.source_addr" type="primary" class="source-btn">Source</a-button></li>
+      <li v-if="data.source_addr != null"><a :href="data.source_addr" class="source-link"><a-icon :type="sourceLinkIcon(data.source_addr)" /> Source</a></li>
       <li v-for="l in data.links"><a :href="l.addr" target="_blank"><a-icon :type="l.icon == null ? 'link' : l.icon" /> {{l.label}}</a></li>
     </ul>
   </div>
@@ -39,10 +39,9 @@
 </script>
 
 <style>
-  /* just to reduce accent of primary btn */
-  .source-btn {
-    background: #cbe1ff;
-    color: #168be5;
-    text-shadow: none;
+  .source-link {
+    display: inline-block;
+    border: 1px solid #abc6e1;
+    padding: 3px 15px;
   }
 </style>
