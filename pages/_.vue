@@ -333,6 +333,7 @@
                 this.selectedTopics = val;
                 this.setPathFromSelectedTopics()
                 this.loadData()
+                window.scrollTo(0,0);
             },
 
             handleSearch(val, e) {
