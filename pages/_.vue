@@ -301,7 +301,6 @@
                             }
                             Array.prototype.unshift.apply(this.data, defElems);
                         }
-
                     })
                 } catch (e) {
                     if (!e.status) {
@@ -386,6 +385,7 @@
                 this.setPathFromSelectedTopics()
                 this.searchVal = ""
                 this.loadData()
+                window.scrollTo(0,0);
             },
 
             handleInputFromPath() {
@@ -440,10 +440,13 @@
                     return 'star'
                 }
                 if (d.type === 'conference') {
-                    return 'bulb'
+                    return 'team'
                 }
                 if (d.type === 'software') {
                     return 'appstore'
+                }
+                if (d.type === 'book') {
+                    return 'book'
                 }
 
                 if (d.data.home_addr != null) {
