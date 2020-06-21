@@ -238,7 +238,7 @@
                 let qs = []
                 if (this.selectedTopics.length > 0) {
                     for (let i = 0; i < this.selectedTopics.length; i++) {
-                        qs.push("topics=" + this.selectedTopics[i].key);
+                        qs.push("topics=" + encodeURIComponent(this.selectedTopics[i].key));
                     }
                 }
                 qs.push("page=" + this.page)
@@ -258,7 +258,7 @@
                     }
 
                     if (param != "") {
-                        qs.push(param + "=" + sv.substr(1))
+                        qs.push(param + "=" + encodeURIComponent(sv.substr(1)))
                     }
                 }
 
