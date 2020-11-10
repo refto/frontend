@@ -12,13 +12,17 @@
 # local project's dir to deploy from
 projectDir=~/projects/refto/frontend
 # remote project's dir to deploy to
-remoteProjectDir=/project/server/static
+remoteProjectDir=/project/server/web/_nuxt
+# path to where index.html should be copied
+serverRoot=/project/server/web
 # remote's user
 remoteUser=
 # remote's addr
 remoreAddr=
 # server's API addr
 serverApiAddr=
+# public path
+nuxtPublicPath=
 # Google Analytics ID
 gaID=
 
@@ -26,6 +30,7 @@ cd $projectDir || exit
 
 # set vars for prod
 export REFTO_API_ADDR=$serverApiAddr
+export NUXT_PUBLIC_PATH=$nuxtPublicPath
 export GA_ID=$gaID
 
 echo "Building frontend..."
@@ -45,10 +50,9 @@ mkdir ~/frontend-release-tmp || exit
 echo "Extracting archive..."
 tar -xzf refto-frontend.tar.gz -C ~/frontend-release-tmp || exit
 
-mv ~/frontend-release-tmp/dist/200.html ~/frontend-release-tmp/dist/index.html || exit
-
 echo "Copying project..."
 rm -rf $remoteProjectDir || exit
+mv ~/frontend-release-tmp/dist/200.html $serverRoot/index.html || exit
 mv ~/frontend-release-tmp/dist $remoteProjectDir || exit
 
 echo "Cleaning..."
@@ -57,6 +61,7 @@ rm -rf ~/frontend-release-tmp || exit
 EOF
 
 unset REFTO_API_ADDR
+unset NUXT_PUBLIC_PATH
 unset GA_ID
 rm -f refto-frontend.tar.gz
 

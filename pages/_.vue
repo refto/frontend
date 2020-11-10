@@ -483,10 +483,10 @@
 
             getCardClass(d) {
                 // make definitions stand out a bit
-                if (d.type == 'definition') {
+                if (d.type === 'definition') {
                     return 'definition-card'
                 }
-                if (d.type == 'definition-rel') {
+                if (d.type === 'definition-rel') {
                     return 'definition-rel-card'
                 }
 
