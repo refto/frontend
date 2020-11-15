@@ -11,15 +11,15 @@
     "generate": "nuxt generate"
   },
   "dependencies": {
-    "@nuxtjs/axios": "^5.10.3",
-    "ant-design-vue": "^1.1.10",
+    "@nuxtjs/axios": "^5.12.2",
+    "ant-design-vue": "^1.7.2",
     "install": "^0.13.0",
-    "moment": "^2.26.0",
-    "nuxt": "^2.0.0",
+    "moment": "^2.29.1",
+    "nuxt": "^2.14.7",
     "vue-masonry": "^0.11.8"
   },
   "devDependencies": {
-    "@nuxtjs/google-analytics": "^2.3.0",
-    "babel-plugin-import": "^1.13.0"
+    "@nuxtjs/google-analytics": "^2.4.0",
+    "babel-plugin-import": "^1.13.1"
   }
 }
