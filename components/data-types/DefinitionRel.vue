@@ -3,7 +3,7 @@
     <a-avatar v-if="data.picture_addr != null" shape="square" :src="data.picture_addr" />
     <p v-if="data.description != null" v-html="data.description"></p>
     <a-list v-if="this.hasLinks()" >
-      <a-list-item v-for="l in data.links">
+      <a-list-item v-for="(l, i) in data.links" :key="i">
         <div><a :href="l.addr" target="_blank"><a-icon :type="l.icon == null ? 'link' : l.icon" /> {{l.label}}</a></div>
         <p v-if="l.description != null" v-html="l.description" class="def-link-description"></p>
       </a-list-item>

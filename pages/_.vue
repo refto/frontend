@@ -1,43 +1,73 @@
 <template>
   <a-layout>
     <a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
-      <div>
-        <div id="logo">refto</div>
-        <div id="searchBox">
-          <a-input-search
-            v-if="searchMode"
-            size="large"
-            allowClear
-            v-model="searchVal"
-            ref="searchInput"
-            style="width: 100%"
-            @change="handleSearchValChange"
-            @search="handleSearch"
-          >
-          </a-input-search>
-          <a-select
-            v-if="!searchMode"
-            size="large"
-            mode="tags"
-            style="width: 100%"
-            allowClear
-            ref="topicsInput"
-            label-in-value
-            :value="selectedTopics"
-            :loading="loading"
-            placeholder="Select topic..."
-            @change="handleTopicChange"
-            @search="handleTopicSearch"
-            :token-separators="[',']"
-          >
-            <a-spin v-if="loading" slot="notFoundContent" size="small"/>
-            <a-icon slot="clearIcon" type="close"></a-icon>
-            <a-select-option v-for="item in topics" :key="item" :value="item">
-              {{ item }}
-            </a-select-option>
-          </a-select>
-        </div>
-      </div>
+      <a-row>
+        <a-col :span="6">          <div id="logo">refto.dev</div>
+        </a-col>
+        <a-col :span="12">
+          <div id="searchBox">
+            <a-input-search
+              v-if="searchMode"
+              size="large"
+              allowClear
+              v-model="searchVal"
+              ref="searchInput"
+              style="width: 100%"
+              @change="handleSearchValChange"
+              @search="handleSearch"
+            >
+            </a-input-search>
+            <a-select
+              v-if="!searchMode"
+              size="large"
+              mode="tags"
+              style="width: 100%"
+              allowClear
+              ref="topicsInput"
+              label-in-value
+              :value="selectedTopics"
+              :loading="loading"
+              placeholder="Select topic..."
+              @change="handleTopicChange"
+              @search="handleTopicSearch"
+              :token-separators="[',']"
+            >
+              <a-spin v-if="loading" slot="notFoundContent" size="small"/>
+              <a-icon slot="clearIcon" type="close"></a-icon>
+              <a-select-option v-for="item in topics" :key="item" :value="item">
+                {{ item }}
+              </a-select-option>
+            </a-select>
+          </div>
+        </a-col>
+        <a-col :span="6">
+          <div id="userInfo">
+            <div v-if="!auth">
+              <a-button type="primary" size="large" icon="github" :href="$config.githubAuthAddr">
+                Connect
+              </a-button>
+            </div>
+            <div v-else>
+
+              <a-dropdown :trigger="['click']">
+                <a id="userMenuHeader" @click="e => e.preventDefault()">
+                  <a-avatar :src="this.auth.user.avatar_url" :size="64" />
+                  <a-icon type="github" /> {{this.auth.user.login}} <a-icon type="down" />
+                </a>
+                <a-menu slot="overlay">
+                  <a-menu-item key="0" @click="e => e.preventDefault()">
+                    <a-icon type="unordered-list" /> My collections
+                  </a-menu-item>
+                  <a-menu-divider />
+                  <a-menu-item key="3" @click="this.logout">
+                    <a-icon type="logout" /> Logout
+                  </a-menu-item>
+                </a-menu>
+              </a-dropdown>
+            </div>
+          </div>
+        </a-col>
+      </a-row>
     </a-layout-header>
     <a-layout-content :style="{ marginTop: '64px' }">
       <div style="background-color: #ececec; padding: 20px;">
@@ -62,7 +92,7 @@
           </a-card>
         </template>
         <a-row :gutter="16" type="flex" align="top" v-masonry transition-duration="1s" item-selector=".masonryCard">
-          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile class="masonryCard"
+          <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile class="masonryCard"
                  v-if="this.selectedTopics.length < 1 && this.searchVal == '' && this.data.length !== 0">
             <a-card id="intro">
               <p><b>Welcome to refto.dev</b> - a collection of awesome creations that is useful to software developers.
@@ -84,7 +114,7 @@
           </a-col>
 
 
-          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile v-for="d in data" :key="d.token"
+          <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile v-for="d in data" :key="d.token"
                  class="masonryCard">
             <a-card :class="getCardClass(d)">
               <a v-if="d.type != 'definition-rel'" slot="extra" :href="editAddr(d.token, d.type)" target="_blank">
@@ -104,7 +134,7 @@
 
             </a-card>
           </a-col>
-          <a-col :xs="24" :sm="24" :md="12" :lg="8" :xl="6" v-masonry-tile class="masonryCard"
+          <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile class="masonryCard"
                  v-if="this.data.length >= totalCount && !this.loading && this.data.length != 0">
             <a-card id="outro">
               <div slot="title"><a-icon type="thunderbolt" /> Not satisfied?</div>
@@ -210,7 +240,9 @@
                 error: "",
                 searchMode: false,
                 searchVal: "",
-                helpVisible: false
+                helpVisible: false,
+                auth: null,
+                // githubAuthAddr: "",
             };
         },
 
@@ -225,6 +257,10 @@
         },
 
         beforeMount() {
+            if (this.$store.state.auth !== null) {
+                this.auth = this.$store.state.auth
+            }
+
             this.handleInputFromPath()
             this.loadData()
         },
@@ -303,6 +339,10 @@
                         }
                     })
                 } catch (e) {
+                    if (e.response.data.error != "") {
+                        this.error = e.response.data.error
+                        return
+                    }
                     if (!e.status) {
                         this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
                     }
@@ -492,6 +532,12 @@
 
                 return ''
             },
+
+            logout() {
+                this.$store.commit('setAuth', null)
+                this.auth = null
+            },
+
         },
 
         watch: {
@@ -509,7 +555,12 @@
             }
         },
 
-        computed: {},
+        computed: {
+            // githubAuthAddr: function ({ $config: { GithubClientID } }) {
+            //     return "https://github.com/login/oauth/authorize?client_id=" + $config.GithubClientID
+            // }
+
+        },
     };
 </script>
 
@@ -572,16 +623,17 @@
   }
 
   #logo {
-    float: left;
-    width: 240px;
     color: #ececec;
-    font-size: 95px;
-    font-weight: 700;
+    font-size: 50px;
   }
 
-  #searchBox {
-    float: left;
-    min-width: 200px;
+  #userInfo {
+    float: right;
+  }
+
+  #userMenuHeader {
+    color: #ececec;
+    font-size: 22px;
   }
 
   #footerLinks {
@@ -707,7 +759,7 @@
 
   @media only screen and (max-width: 700px) {
     #logo {
-      display: none;
+      /*display: none;*/
     }
   }
 </style>

@@ -1,4 +1,7 @@
 export default {
+  publicRuntimeConfig: {
+    githubAuthAddr: process.env.REFTO_GITHUB_CLIENT_ID ? 'https://github.com/login/oauth/authorize?client_id=' + process.env.REFTO_GITHUB_CLIENT_ID  : 'github client ID not set!'
+  },
   mode: 'spa',
   /*
   ** Headers of the page
@@ -18,7 +21,7 @@ export default {
   /*
   ** Customize the progress-bar color
   */
-  loading: { color: '#fff' },
+  loading: { color: '#0096ff' },
   /*
   ** Global CSS
   */
@@ -29,7 +32,8 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
-    '@/plugins/general'
+    '@/plugins/general',
+    '@/plugins/axios',
   ],
   /*
   ** Nuxt.js dev-modules
@@ -39,6 +43,7 @@ export default {
       id: process.env.GA_ID || ''
     }]
   ],
+
   /*
    ** Nuxt.js modules
    */
@@ -46,6 +51,7 @@ export default {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios'
   ],
+
   /*
  ** Axios module configuration
  ** See https://axios.nuxtjs.org/options
@@ -53,6 +59,11 @@ export default {
   axios: {
     baseURL: process.env.REFTO_API_ADDR || 'http://localhost:8080/api'
   },
+
+  router: {
+    middleware: ['init_auth', 'auth'],
+  },
+
   /*
   ** Build configuration
   */
@@ -68,5 +79,5 @@ export default {
    //       ['import', { libraryName: "ant-design-vue" } ]
    //      ]
    // }
-  }
+  },
 }

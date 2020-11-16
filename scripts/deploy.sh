@@ -25,6 +25,8 @@ serverApiAddr=
 nuxtPublicPath=
 # Google Analytics ID
 gaID=
+# Github Client ID
+githubClientID=
 
 cd $projectDir || exit
 
@@ -32,6 +34,7 @@ cd $projectDir || exit
 export REFTO_API_ADDR=$serverApiAddr
 export NUXT_PUBLIC_PATH=$nuxtPublicPath
 export GA_ID=$gaID
+export REFTO_GITHUB_CLIENT_ID=$githubClientID
 
 echo "Building frontend..."
 npm run generate
@@ -60,9 +63,11 @@ rm -f ~/refto-frontend.tar.gz || exit
 rm -rf ~/frontend-release-tmp || exit
 EOF
 
+# cleanup env
 unset REFTO_API_ADDR
 unset NUXT_PUBLIC_PATH
 unset GA_ID
+unset REFTO_GITHUB_CLIENT_ID
 rm -f refto-frontend.tar.gz
 
 echo "Frontend deployed!"
