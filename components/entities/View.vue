@@ -52,15 +52,28 @@
         <a-divider />
       </a-col>
     </a-row>
-    <a-modal v-model="selectCollectionModal" title="Select collection" :footer="null">
-      <a-button type="primary" icon="plus">
+    <a-modal v-model="selectCollectionModal"  :footer="null" :bodyStyle="{paddingTop:0}">
+      <span slot="title">
+        <a-button type="primary" icon="plus" @click="showCreateCollectionForm">
         New collection
       </a-button>
+      </span>
       <a-list item-layout="horizontal" size="small" :loading="loading">
         <a-list-item v-for="(c, i) in collections" :key="i" @click="addToCollection(c.id)">
-            <a>{{c.name}}</a> <a-tag v-if="c.private" style="float:right" color="green"><a-icon type="lock" /> Private</a-tag>
+          <a-tag v-if="c.isNew"  color="purple">NEW</a-tag> <a>{{c.name}}</a><a-tag v-if="c.private" style="float:right" color="green"><a-icon type="lock" /> Private</a-tag>
         </a-list-item>
       </a-list>
+    </a-modal>
+    <a-modal v-model="createFormModal">
+      <CreateForm ref="createForm" />
+      <template slot="footer">
+        <a-button key="back" @click="handleCancelCreateCollection">
+          Cancel
+        </a-button>
+        <a-button key="submit" type="primary" :loading="loading" @click="handleCreateCollection">
+          Create
+        </a-button>
+      </template>
     </a-modal>
     <a-drawer
       title="Meta"
@@ -99,6 +112,7 @@
     import SoftwareType from "@/components/data-types/Software";
     import DefinitionType from "@/components/data-types/Definition";
     import DefinitionRelType from "@/components/data-types/DefinitionRel";
+    import CreateForm from "@/components/collections/CreateForm";
 
 
     const repoAddr = "https://github.com/refto/data/"
@@ -141,6 +155,7 @@
                 dataCommitsAddr: "",
                 repoAddr: repoAddr,
                 width: defaultWidth,
+                createFormModal: false,
             };
         },
 
@@ -152,6 +167,7 @@
             SoftwareType,
             DefinitionType,
             DefinitionRelType,
+            CreateForm
         },
 
         beforeMount() {
@@ -204,7 +220,9 @@
                     }
                     this.$axios.$get(path).then((resp) => {
                         this.collections = []
-                        this.collections = resp.data
+                        if (resp.data != null) {
+                            this.collections = resp.data
+                        }
                     })
                 } catch (e) {
                     if (e.response.data != undefined && e.response.data.error != "") {
@@ -321,6 +339,51 @@
                 }
                 return moment(this.entity.updated_at).format(dateFormat)
             },
+            showCreateCollectionForm() {
+                this.createFormModal = true
+                Vue.nextTick(() => {
+                    this.$refs.createForm.$refs.name.focus();
+                })
+            },
+            handleCreateCollection() {
+                const form = this.$refs.createForm.form;
+                form.validateFields((err, values) => {
+                    if (err) {
+                        return;
+                    }
+
+                    this.error = ""
+                    this.loading = true
+
+                    // TODO
+                    // can't find how to make form value of type bool
+                    // so should cast it here :(
+                    values.private = values.private === "true"
+
+                    this.$axios.$request({method: "POST", url: "/collections/", data: values}).then((resp) =>  {
+                        // TODO instead of reload it is more convenient to add newly created collection to
+                        // "new collections" section
+                        // because if user browsing collections not on first or last page
+                        // he will not see newly created collection
+                        resp.isNew = true
+                        this.collections.unshift(resp)
+                    }).catch((err) => {
+                        if (err.response.data !== undefined && err.response.data.error != "") {
+                            this.error = err.response.data.error
+                        }
+                        else if (!e.status) {
+                            this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
+                        }
+                    })
+                    this.loading = false
+                    form.resetFields();
+                    this.createFormModal = false
+                })
+
+            },
+            handleCancelCreateCollection() {
+                this.createFormModal = false
+            },
         },
 
         watch: {
@@ -378,4 +441,5 @@
 .ant-tag {
   margin-top: 7px;
 }
+
 </style>

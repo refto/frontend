@@ -172,6 +172,15 @@
                 this.createFormTitle = 'Create collection'
                 this.createFormTitleIcon = 'plus'
                 this.createFormModal = true
+                Vue.nextTick(() => {
+                    this.$refs.createForm.$refs.name.focus();
+                    const form = this.$refs.createForm.form;
+                    form.setFieldsValue({
+                        'name': '',
+                        'private': 'true',
+                        'id': 0,
+                    })
+                })
             },
             deleteCollection(id) {
                 this.loading = true
@@ -194,6 +203,7 @@
                 this.createFormTitleIcon = 'edit'
                 this.createFormModal = true
                 Vue.nextTick(() => {
+                    this.$refs.createForm.$refs.name.focus();
                     const form = this.$refs.createForm.form;
                     form.setFieldsValue({
                             'name': elem.name,
@@ -205,7 +215,6 @@
             handleCreateCollection() {
                 const form = this.$refs.createForm.form;
                 form.validateFields((err, values) => {
-                    console.log(values)
                     if (err) {
                         return;
                     }

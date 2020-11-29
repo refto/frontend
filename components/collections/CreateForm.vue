@@ -2,7 +2,7 @@
   <a-form layout='vertical' :form="form">
     <a-form-item label='Name'>
       <a-input type="hidden" v-decorator="['id']"/>
-      <a-input
+      <a-input ref="name"
         v-decorator="[
               'name',
               {
