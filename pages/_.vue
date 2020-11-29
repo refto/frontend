@@ -2,7 +2,8 @@
   <a-layout>
     <a-layout-header :style="{ position: 'fixed', zIndex: 1, width: '100%' }">
       <a-row>
-        <a-col :span="6">          <div id="logo">refto.dev</div>
+        <a-col :span="6">
+          <Logo/>
         </a-col>
         <a-col :span="12">
           <div id="searchBox">
@@ -41,35 +42,20 @@
           </div>
         </a-col>
         <a-col :span="6">
-          <div id="userInfo">
-            <div v-if="!auth">
-              <a-button type="primary" size="large" icon="github" :href="$config.githubAuthAddr">
-                Connect
-              </a-button>
-            </div>
-            <div v-else>
-
-              <a-dropdown :trigger="['click']">
-                <a id="userMenuHeader" @click="e => e.preventDefault()">
-                  <a-avatar :src="this.auth.user.avatar_url" :size="64" />
-                  <a-icon type="github" /> {{this.auth.user.login}} <a-icon type="down" />
-                </a>
-                <a-menu slot="overlay">
-                  <a-menu-item key="0" @click="e => e.preventDefault()">
-                    <a-icon type="unordered-list" /> My collections
-                  </a-menu-item>
-                  <a-menu-divider />
-                  <a-menu-item key="3" @click="this.logout">
-                    <a-icon type="logout" /> Logout
-                  </a-menu-item>
-                </a-menu>
-              </a-dropdown>
-            </div>
-          </div>
+          <UserMenu/>
         </a-col>
       </a-row>
     </a-layout-header>
     <a-layout-content :style="{ marginTop: '64px' }">
+      <template v-if="hasTitle">
+        <div class="pageHeader">
+          <a-breadcrumb v-if="auth && collectionToken != ''">
+            <a-breadcrumb-item><NuxtLink to="/pages/collections">Collections</NuxtLink> /</a-breadcrumb-item>
+          </a-breadcrumb>
+          <h1>{{header}}</h1>
+          <div v-html="filterInfo"></div>
+        </div>
+      </template>
       <div style="background-color: #ececec; padding: 20px;">
         <a-alert v-if="this.error !=''"
                  message="Whoops"
@@ -78,22 +64,43 @@
         >
           <p slot="description" v-html="this.error"></p>
         </a-alert>
+        <template v-if="!this.loading && this.data.length == 0 && col.id > 0">
+          <a-empty>
+            <span slot="description"> No data in this collection</span>
+          </a-empty>
+        </template>
         <template
-          v-if="!this.loading && this.data.length == 0 && (this.selectedTopics.length > 0 || this.searchVal != '')">
-          <a-card>
-            <div slot="title">You just got nothing <!--(at least you have internet)--></div>
-            <a-avatar shape="square" src="https://lovingthepregnantyou.com/wp-content/uploads/2012/06/itsOK_go_on.jpg"
-                      id="notContentPic"/>
-            <p>If you get here from external link it is means that content that was here is not longer available, sorry.
-              You might clarify your search in the search box above.<br>
-              If you search this by your own intent, then you got what you looked for.
-            </p>
-
-          </a-card>
+          v-if="showYouGotNothing">
+          <a-row :gutter="16">
+            <a-col :lg="24" :xl="12">
+              <a-card>
+                <div slot="title">You've just got nothing <!--(at least you have internet)--></div>
+                <a-avatar shape="square"
+                          src="https://lovingthepregnantyou.com/wp-content/uploads/2012/06/itsOK_go_on.jpg"
+                          id="notContentPic"/>
+                <p>If you get here from external link it is means that content that was here is not longer available,
+                  sorry.</p>
+                <p>You might clarify your search in the search box above.</p>
+                <p>If you search this by your own intent, then you got what you looked for.</p>
+              </a-card>
+            </a-col>
+            <a-col :lg="24" :xl="12">
+              <a-card>
+                <div slot="title">Care to contribute?</div>
+                <a-avatar shape="square" src="https://media.tenor.com/images/a5369af4f7b18dae48f9204242e29664/tenor.gif"
+                          id="contributePic"/>
+                <p>If you think that something is missing here or not correct - you could <a
+                  href="https://github.com/refto/data#how-to-contribute" target="_blank">resolve this issue by
+                  yourself</a>.</p>
+                <p>To busy to contribute? Simply <a href="https://github.com/refto/data/issues/new" target="_blank">open
+                  an issue</a> about what you missed here, we'll take care of it.</p>
+                <p>Thank you!</p>
+              </a-card>
+            </a-col>
+          </a-row>
         </template>
         <a-row :gutter="16" type="flex" align="top" v-masonry transition-duration="1s" item-selector=".masonryCard">
-          <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile class="masonryCard"
-                 v-if="this.selectedTopics.length < 1 && this.searchVal == '' && this.data.length !== 0">
+          <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile class="masonryCard" v-if="showWelcomeText">
             <a-card id="intro">
               <p><b>Welcome to refto.dev</b> - a collection of awesome creations that is useful to software developers.
                 The <a href="https://github.com/refto/data" target="_blank">data source is stored on GitHub</a> and
@@ -112,18 +119,20 @@
               </ul>
             </a-card>
           </a-col>
-
-
           <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile v-for="d in data" :key="d.token"
                  class="masonryCard">
             <a-card :class="getCardClass(d)">
-              <a v-if="d.type != 'definition-rel'" slot="extra" :href="editAddr(d.token, d.type)" target="_blank">
-                <a-icon type="edit" title="Edit this"/>
+              <span slot="title">
+                <a v-if="d.type != 'definition-rel'" @click="setEntityID(d.id)">
+                  <a-icon :type="getIcon(d)"/> {{d.data.title}}
+                </a>
+                <span v-else> <a-icon :type="getIcon(d)"/> {{d.data.title}}</span>
+              </span>
+
+              <a slot="extra" v-if="d.data.home_addr != null" :href="d.data.home_addr"
+                 :title="'Link to ' + d.data.title" target="_blank">
+                <a-icon type="link"/>
               </a>
-              <a slot="title" v-if="d.data.home_addr != null" :href="d.data.home_addr" :title="d.data.title" target="_blank">
-                <a-icon :type="getIcon(d)"/>
-                {{d.data.title}}</a>
-              <span slot="title" v-if="d.data.home_addr == null"> <a-icon :type="getIcon(d)"/> {{d.data.title}}</span>
               <div v-if="d.data.topics != null && topicsDiff(d.data.topics).length > 0" slot="actions">
                 <a-button v-for="(t, i) in topicsDiff(d.data.topics)" @click="addTopic(t)" :key="i"
                           class="add-topic-btn" :type="getTopicButtonType(t)" :title="'Filter by ' + t">
@@ -131,13 +140,14 @@
                 </a-button>
               </div>
               <component v-bind:is="components[d.type]" :data="d.data"></component>
-
             </a-card>
           </a-col>
-          <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile class="masonryCard"
-                 v-if="this.data.length >= totalCount && !this.loading && this.data.length != 0">
+          <a-col :xs="24" :sm="24" :md="12" :lg="12" :xl="8" v-masonry-tile class="masonryCard" v-if="showNotSatisfiedText">
             <a-card id="outro">
-              <div slot="title"><a-icon type="thunderbolt" /> Not satisfied?</div>
+              <div slot="title">
+                <a-icon type="thunderbolt"/>
+                Not satisfied?
+              </div>
               <a-avatar shape="square"
                         src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSfULlhWZCclULsqfSiaUl5uwYNefsF45MEMesbKVZN6_5dQLxjuQ&s"/>
               <p>If you'll find that is something missing here or not correct - feel free to <a
@@ -161,26 +171,7 @@
       </div>
 
     </a-layout-content>
-    <a-layout-footer>
-      <a-row>
-        <a-col :span="12">
-          <p>refto.dev<br>work in progress</p>
-        </a-col>
-        <a-col :span="12">
-          <ul id="footerLinks">
-            <li>
-              <a-icon type="github"/>
-              <a href="https://github.com/refto/data" target="_blank">Data source</a></li>
-            <li>
-              <a-icon type="github"/>
-              <a href="https://github.com/refto/frontend" target="_blank">Frontend source</a></li>
-            <li>
-              <a-icon type="github"/>
-              <a href="https://github.com/refto/server" target="_blank">Server source</a></li>
-          </ul>
-        </a-col>
-      </a-row>
-    </a-layout-footer>
+    <Footer/>
     <a-modal v-model="helpVisible" title="A little bit of help" :footer="null">
       <div id="intro-help">
         <p>To enter "search mode" start your search query with special character:</p>
@@ -198,6 +189,7 @@
         <p>To return back to "topics mode" simply clear search query</p>
       </div>
     </a-modal>
+    <EntityModal :entity_id="entityID" v-on:setEntityID="setEntityID($event)"/>
   </a-layout>
 </template>
 <script>
@@ -208,13 +200,22 @@
     import SoftwareType from "../components/data-types/Software";
     import DefinitionType from "../components/data-types/Definition";
     import DefinitionRelType from "../components/data-types/DefinitionRel";
+    import UserMenu from "../components/UserMenu";
+    import Footer from "../components/Footer";
+    import Logo from "../components/Logo";
+    import EntityModal from "../components/entities/View";
+    import Vue from 'vue'
+
 
     // input starting with any of this chars
     // disables topics mode and triggers free search mode
-    const searchAddrTrigger = "@" // search in addresses
-    const searchNameTrigger = "~" // search in names
-    const searchAllTrigger = "*" // search everywhere
-    const searchTriggers = [searchAddrTrigger, searchNameTrigger, searchAllTrigger]
+    const addrFilterPrefix = "@" // search in addresses
+    const nameFilterPrefix = "~" // search in names
+    const searchModePrefix = "*" // search everywhere
+    const searchTriggers = [addrFilterPrefix, nameFilterPrefix, searchModePrefix]
+
+    const collectionInputPrefix = "c:"
+    const entityInputPrefix = "e:"
 
     const helpTrigger = "?"
 
@@ -242,7 +243,13 @@
                 searchVal: "",
                 helpVisible: false,
                 auth: null,
-                // githubAuthAddr: "",
+                collectionToken: "",
+                col: {
+                    id: 0
+                },
+                entityID: "",
+                header: "",
+                filterInfo: "",
             };
         },
 
@@ -254,6 +261,10 @@
             SoftwareType,
             DefinitionType,
             DefinitionRelType,
+            UserMenu,
+            Footer,
+            Logo,
+            EntityModal,
         },
 
         beforeMount() {
@@ -261,12 +272,29 @@
                 this.auth = this.$store.state.auth
             }
 
-            this.handleInputFromPath()
-            this.loadData()
+            this.init()
+        },
+
+        mounted() {
+            if (this.entityID !== "") {
+                let a = this.entityID
+                this.entityID = 0
+                this.setEntityID(a)
+            }
         },
 
         methods: {
+            init() {
+                this.handleInputFromPath()
+                if (this.collectionToken != "") {
+                    this.loadDataWithCollection()
+                } else {
+                    this.loadData()
+                }
+            },
+
             async loadData() {
+                this.header = ""
                 this.error = ""
                 this.loading = true
                 // todo: there must be a better way to searialize array into query string
@@ -283,13 +311,13 @@
                     let sv = this.searchVal
                     let param = ""
 
-                    if (sv.startsWith(searchAddrTrigger)) {
+                    if (sv.startsWith(addrFilterPrefix)) {
                         param = "addr"
                     }
-                    if (sv.startsWith(searchNameTrigger)) {
+                    if (sv.startsWith(nameFilterPrefix)) {
                         param = "name"
                     }
-                    if (sv.startsWith(searchAllTrigger)) {
+                    if (sv.startsWith(searchModePrefix)) {
                         param = "query"
                     }
 
@@ -298,6 +326,9 @@
                     }
                 }
 
+                if (this.col.id > 0) {
+                    qs.push("col=" + this.col.id)
+                }
 
                 if (qs.length > 0) {
                     path += "?" + qs.join("&")
@@ -328,15 +359,17 @@
                                 for (let i = 0; i < rels.length; i++) {
                                     let defChild = {
                                         title: rels[i].title,
-                                        token:  resp.definition.token + "- " + i,
-                                        type:  "definition-rel",
-                                        data:  rels[i]
+                                        token: resp.definition.token + "- " + i,
+                                        type: "definition-rel",
+                                        data: rels[i]
                                     }
                                     defElems.push(defChild)
                                 }
                             }
                             Array.prototype.unshift.apply(this.data, defElems);
                         }
+
+                        this.getFilterInfo()
                     })
                 } catch (e) {
                     if (e.response.data.error != "") {
@@ -347,6 +380,27 @@
                         this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
                     }
                 }
+                this.loading = false
+            },
+
+            loadDataWithCollection() {
+                this.loading = true
+
+                this.$axios.$get('/collections/' + this.collectionToken + '/').then((resp) => {
+                    this.col = resp
+                }).
+                then(() => {
+                    this.loadData()
+                }).
+                catch((err) => {
+                            this.$notification.open({
+                                message: 'Request error',
+                                description: err,
+                                duration: 0,
+                            });
+
+                })
+
                 this.loading = false
             },
 
@@ -373,12 +427,16 @@
                 this.selectedTopics = val;
                 this.setPathFromSelectedTopics()
                 this.loadData()
-                window.scrollTo(0,0);
+                window.scrollTo(0, 0);
             },
 
             handleSearch(val, e) {
                 this.page = 1
                 this.loadData()
+            },
+
+            setEntityID(id) {
+                this.entityID = id
             },
 
             handleTopicSearch(val) {
@@ -426,10 +484,12 @@
                 this.setPathFromSelectedTopics()
                 this.searchVal = ""
                 this.loadData()
-                window.scrollTo(0,0);
+                window.scrollTo(0, 0);
             },
 
             handleInputFromPath() {
+                this.resolveInputFromHash(this.$route.hash)
+
                 let pathVal = this.$route.params.pathMatch
                 if (pathVal === "") {
                     return
@@ -446,6 +506,48 @@
                 }
             },
 
+            resolveInputFromHash(hash) {
+                if (hash == "") {
+                    return
+                }
+
+                let collectionToken = ""
+                let entityID = ""
+                let hashParts = hash.split('#');
+
+                for (let i = 0; i < hashParts.length; i++) {
+                    if (hashParts[i] === "") {
+                        continue
+                    }
+                    if (collectionToken === "") {
+                        collectionToken = this.resolveCollectionFromPath(hashParts[i])
+                    }
+                    if (entityID === "") {
+                        entityID = this.resolveEntityFromPath(hashParts[i])
+                    }
+                }
+
+                this.collectionToken = collectionToken
+                this.entityID = entityID
+            },
+
+            resolveCollectionFromPath(v) {
+                if (v.startsWith(collectionInputPrefix)) {
+                    return v.slice(collectionInputPrefix.length)
+                }
+
+                return ""
+            },
+
+
+            resolveEntityFromPath(v) {
+                if (v.startsWith(entityInputPrefix)) {
+                    return v.slice(entityInputPrefix.length)
+                }
+
+                return ""
+            },
+
             setPathFromSelectedTopics() {
                 let sTopics = []
                 for (let i = 0; i < this.selectedTopics.length; i++) {
@@ -455,22 +557,8 @@
                 history.pushState(
                     {},
                     null,
-                    "/" + sTopics.join(',')
+                    "/" + sTopics.join(',') + location.hash
                 )
-            },
-
-            editAddr(name, type) {
-                if (type == "definition-rel") {
-                    return null
-                }
-                let t = ""
-                if (type !== "") {
-                    t = "." + type
-                }
-                if (name.startsWith("/")) {
-                    name = name.slice(1)
-                }
-                return "https://github.com/refto/data/edit/master/" + name + t + ".yaml"
             },
 
             getIcon(d) {
@@ -538,6 +626,46 @@
                 this.auth = null
             },
 
+            getFilterInfo: function () {
+                if (!this.searchMode && this.col.id == 0) {
+                    return
+                }
+
+                let sv = this.searchVal
+                let head = ""
+                let info = ""
+
+                if (this.searchMode && sv.length > 1) {
+                    head = "Search "
+                    if (sv.startsWith(addrFilterPrefix)) {
+                        head += "in ref. URLs"
+                    }
+                    else if (sv.startsWith(nameFilterPrefix)) {
+                        head += "in names"
+                    }
+
+                    this.header = head
+
+                    if (this.col.id > 0) {
+                        info = "Collection: " + this.col.name + "<br>"
+                    }
+
+                    info += "Found "
+                    if (this.totalCount > 0) {
+                        info += "elements: " + this.totalCount
+                    } else {
+                        info += "nothing."
+                    }
+
+                    this.filterInfo = info
+                    return
+                }
+
+                if (this.col.id > 0) {
+                    this.header = this.col.name
+                }
+            }
+
         },
 
         watch: {
@@ -548,18 +676,29 @@
                     history.replaceState(
                         {},
                         null,
-                        "/" + val.charAt(0) + encodeURIComponent(val.substr(1))
+                        "/" + val.charAt(0) + encodeURIComponent(val.substr(1))  + location.hash
                     )
                 }
-
-            }
+            },
+            $route: function() {
+                console.log("route changed")
+                this.init()
+            },
         },
 
         computed: {
-            // githubAuthAddr: function ({ $config: { GithubClientID } }) {
-            //     return "https://github.com/login/oauth/authorize?client_id=" + $config.GithubClientID
-            // }
-
+            showWelcomeText: function () {
+                return this.col.id == 0 && this.selectedTopics.length < 1 && this.searchVal == '' && this.data.length !== 0
+            },
+            showNotSatisfiedText: function () {
+                return this.col.id == 0 && this.data.length >= this.totalCount && !this.loading && this.data.length != 0
+            },
+            showYouGotNothing: function () {
+                return !this.loading && this.col.id == 0 && this.data.length == 0 && (this.selectedTopics.length > 0 || this.searchVal != '')
+            },
+            hasTitle: function () {
+                return this.header != ""
+            },
         },
     };
 </script>
@@ -612,47 +751,6 @@
     padding-top: 0;
     padding-bottom: 0;
     font-size: 120%;
-  }
-
-  .ant-layout-footer {
-    background: #001529;
-  }
-
-  .ant-layout-footer * {
-    color: #ececec;
-  }
-
-  #logo {
-    color: #ececec;
-    font-size: 50px;
-  }
-
-  #userInfo {
-    float: right;
-  }
-
-  #userMenuHeader {
-    color: #ececec;
-    font-size: 22px;
-  }
-
-  #footerLinks {
-    font-size: 16px;
-  }
-
-  #footerLinks li {
-    list-style: none;
-    padding: 5px;
-  }
-
-  #footerLinks li a {
-    color: #00ace5;
-    text-decoration: underline;
-  }
-
-  #footerLinks li a:hover {
-    color: white;
-    text-decoration: none;
   }
 
   #intro {
@@ -725,6 +823,16 @@
     height: initial;
   }
 
+
+  #contributePic {
+    float: right;
+    margin-bottom: 10px;
+    margin-right: 0px;
+    margin-left: 10px;
+    width: 200px;
+    height: initial;
+  }
+
   .definition-card {
     box-shadow: inset 0 0 0 1px #9aabd1;
   }
@@ -749,17 +857,17 @@
     box-shadow: inset 0 0 0 2px #168be5, 0 0 8px rgba(0, 0, 0, 0.2);
   }
 
-
-  @media only screen and (max-width: 1000px) {
-    #logo {
-      width: 80px;
-      font-size: 30px;
-    }
+  .ant-card-extra {
+    font-size: 20px;
   }
 
-  @media only screen and (max-width: 700px) {
-    #logo {
-      /*display: none;*/
-    }
+  .pageHeader {
+    padding: 20px;
   }
+
+  h1 {
+    font-size: 28px;
+    margin: 0;
+  }
+
 </style>
