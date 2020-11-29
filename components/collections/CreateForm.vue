@@ -21,7 +21,7 @@
             ]"
       >
         <a-radio value="false">Public</a-radio>
-        <a-radio value="true">Private</a-radio>
+        <a-radio value="true"><a-icon type="lock" /> Private</a-radio>
       </a-radio-group>
     </a-form-item>
   </a-form>
@@ -39,24 +39,4 @@
 </script>
 
 <style>
-  #logo a {
-    color: #ececec;
-    font-size: 50px;
-  }
-
-  @media only screen and (max-width: 1000px) {
-    #logo a {
-      width: 80px;
-      font-size: 30px;
-    }
-  }
-
-  @media only screen and (max-width: 700px) {
-    #logoSpan {
-      display: none;
-    }
-    #logo a {
-      font-size: 50px;
-    }
-  }
 </style>

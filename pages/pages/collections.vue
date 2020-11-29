@@ -21,11 +21,14 @@
       </a-row>
       <a-table :columns="dataColumns" :data-source="this.data" :show-header="false" :pagination="pagination"
                :loading="loading" @change="handleTableChange" :row-key="elem => elem.id">
-        <a slot="name" slot-scope="val, elem">{{ val }}</a>
+        <span slot="name" slot-scope="val, elem"><NuxtLink :to="'/#c:'+elem.token">{{ val }}</NuxtLink></span>
         <span slot="private" slot-scope="priv">
-          <a-tag color="green" v-if="priv===true">
-            PRIVATE
+          <a-tag color="green" v-if="priv">
+            <a-icon type="lock" /> PRIVATE
           </a-tag>
+        </span>
+        <span slot="entities_count" slot-scope="count" title="Entities in collection">
+          <a-icon type="file-text" /> {{ count }}
         </span>
         <span slot="actions" slot-scope="text, elem">
           <a @click="editCollection(elem)">Edit</a>
@@ -68,6 +71,12 @@
             dataIndex: 'name',
             key: 'name',
             scopedSlots: { customRender: 'name' },
+        },
+        {
+            title: 'Entities',
+            dataIndex: 'entities_count',
+            key: 'entities_count',
+            scopedSlots: { customRender: 'entities_count' },
         },
         {
             title: 'Private',
@@ -124,6 +133,7 @@
                 // todo: there must be a better way to searialize array into query string
                 let path = '/collections/'
                 let qs = []
+                qs.push("wec=true");
                 if (this.pagination.current > 1) {
                     qs.push("page=" + this.pagination.current);
                 }

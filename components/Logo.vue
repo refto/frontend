@@ -1,6 +1,6 @@
 <template>
   <div id="logo">
-    <NuxtLink to="/">r<span id="logoSpan">efto.dev</span></NuxtLink>
+    <a href="/">r<span id="logoSpan">efto.dev</span></a>
   </div>
 </template>
 
