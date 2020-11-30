@@ -10,6 +10,8 @@ export default function({ $axios, store, route, redirect }) {
   $axios.onError((error) => {
     const code = parseInt(error.response && error.response.status)
 
+    store.commit("setRequestError", error)
+
     if (code === 401) {
       store.commit('setAuth', null)
 

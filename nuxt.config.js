@@ -33,6 +33,7 @@ export default {
   */
   plugins: [
     '@/plugins/general',
+    '@/plugins/console_welcome_message',
     '@/plugins/axios',
   ],
   /*

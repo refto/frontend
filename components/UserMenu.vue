@@ -10,7 +10,7 @@
       <a-dropdown :trigger="['click']">
         <a id="userMenuHeader">
           <a-avatar :src="this.auth.user.avatar_url" :size="64" />
-          <a-icon type="github" /> {{this.auth.user.login}} <a-icon type="down" />
+          <span id="userMenuUsername"><a-icon type="github" /> {{this.auth.user.login}} <a-icon type="down" /></span>
         </a>
         <a-menu slot="overlay">
           <a-menu-item key="0">
@@ -50,11 +50,27 @@
 <style>
   #userMenu {
     float: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   #userMenuHeader {
     color: #ececec;
-    font-size: 22px;
+    font-size: 18px;
   }
+
+  @media only screen and (max-width: 1000px) {
+    #userMenuUsername {
+      display: none;
+    }
+  }
+
+  @media only screen and (max-width: 1200px) {
+    #userMenuHeader {
+      font-size: 14px;
+    }
+  }
+
 
 </style>

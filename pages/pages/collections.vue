@@ -149,14 +149,7 @@
                         this.data = resp.data
                         this.pagination.total = resp.count
                     })
-                } catch (e) {
-                    if (e.response.data != undefined && e.response.data.error != "") {
-                        this.error = e.response.data.error
-                    }
-                    else if (!e.status) {
-                        this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                    }
-                }
+                } catch (e) {}
                 this.loading = false
             },
 
@@ -187,14 +180,6 @@
                 this.$axios.$delete('/collections/' + id + '/').then((resp) =>  {
                     this.$message.success('Collection deleted');
                     this.loadData()
-                }).catch((err) =>  {
-                    console.log(err)
-                    if (err.response && err.response.data && err.response.data.error != "") {
-                        this.error = err.response.data.error
-                    }
-                    else if (!err.status) {
-                        this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                    }
                 })
                 this.loading = false
             },
@@ -240,13 +225,6 @@
                         // because if user browsing collections not on first or last page
                         // he will not see newly created collection
                         this.loadData()
-                    }).catch((err) => {
-                            if (err.response.data !== undefined && err.response.data.error != "") {
-                                this.error = err.response.data.error
-                            }
-                            else if (!e.status) {
-                                this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                            }
                     })
                     this.loading = false
                     form.resetFields();

@@ -38,8 +38,7 @@
             this.login(code)
         },
 
-        components: {
-        },
+        components: {},
 
         methods: {
             async login(code) {
@@ -50,21 +49,11 @@
                     this.loading = false
                     this.$store.commit('setAuth', resp)
                     this.$router.push('/')
-                } catch (e) {
-                    this.loading = false
-                    if (e.response.data.error != "") {
-                        this.error = e.response.data.error
-                        return
-                    }
-                    if (!e.status) {
-                        this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                    }
-                }
+                } catch (e) {}
             },
         },
 
         watch: {},
-
         computed: {},
     };
 </script>

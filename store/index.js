@@ -1,6 +1,7 @@
 export const state = () => {
   return {
     auth: null,
+    requestError: null,
   }
 }
 
@@ -14,6 +15,10 @@ export const mutations = {
   setAuth(state, auth) {
     state.auth = auth
     localStorage.setItem('auth', JSON.stringify(auth))
+  },
+
+  setRequestError(state, error) {
+    state.requestError = error
   },
 }
 
