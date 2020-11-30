@@ -201,13 +201,7 @@
                         this.dataEditAddr = repoAddr + "edit/master/" + this.dataFilename
                         this.dataCommitsAddr = repoAddr + "commits/master/" + this.dataFilename
                     })
-                } catch (e) {
-                    if (e.response.data != undefined && e.response.data.error != "") {
-                        this.error = e.response.data.error
-                    } else if (!e.status) {
-                        this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                    }
-                }
+                } catch (e) {}
                 this.loading = false
             },
             loadCollections(name) {
@@ -224,13 +218,7 @@
                             this.collections = resp.data
                         }
                     })
-                } catch (e) {
-                    if (e.response.data != undefined && e.response.data.error != "") {
-                        this.error = e.response.data.error
-                    } else if (!e.status) {
-                        this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                    }
-                }
+                } catch (e) {}
                 this.loading = false
             },
             addToCollection(collectionID) {
@@ -241,28 +229,6 @@
                 this.$axios.$post(path).then((resp) => {
                     this.$message.success('Added to collection')
                     this.loadEntity(this.entity.id)
-                }).catch((err) => {
-                    if (!err.response) {
-                        this.$notification.open({
-                            message: 'Add to collection',
-                            description: "Unable to connect to API server.<br>Either you have problems with network connection or API server is down.",
-                            duration: 0,
-                        });
-                        return
-                    }
-                    if (!err.response.data) {
-                        this.$notification.open({
-                            message: 'Add to collection',
-                            description: err.response.statusText,
-                            duration: 0,
-                        });
-                        return
-                    }
-                    this.$notification.open({
-                        message: 'Add to collection',
-                        description: err.response.data.error,
-                        duration: 0,
-                    });
                 })
                 this.loading = false
             },
@@ -273,28 +239,6 @@
                 this.$axios.$delete(path).then((resp) => {
                     this.$message.success('Removed from collection')
                     this.loadEntity(this.entity.id)
-                }).catch((err) => {
-                    if (!err.response) {
-                        this.$notification.open({
-                            message: 'Remove from collection',
-                            description: "Unable to connect to API server.<br>Either you have problems with network connection or API server is down.",
-                            duration: 0,
-                        });
-                        return
-                    }
-                    if (!err.response.data) {
-                        this.$notification.open({
-                            message: 'Remove from collection',
-                            description: err.response.statusText,
-                            duration: 0,
-                        });
-                        return
-                    }
-                    this.$notification.open({
-                        message: 'Remove from collection',
-                        description: err.response.data.error,
-                        duration: 0,
-                    });
                 })
                 this.loading = false
             },
@@ -367,13 +311,6 @@
                         // he will not see newly created collection
                         resp.isNew = true
                         this.collections.unshift(resp)
-                    }).catch((err) => {
-                        if (err.response.data !== undefined && err.response.data.error != "") {
-                            this.error = err.response.data.error
-                        }
-                        else if (!e.status) {
-                            this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                        }
                     })
                     this.loading = false
                     form.resetFields();

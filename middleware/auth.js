@@ -1,5 +1,5 @@
 const protectedRoutes = [
-
+  'pages/collections'
 ]
 
 export default function({ store, route, redirect }) {

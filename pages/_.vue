@@ -371,15 +371,7 @@
 
                         this.getFilterInfo()
                     })
-                } catch (e) {
-                    if (e.response.data.error != "") {
-                        this.error = e.response.data.error
-                        return
-                    }
-                    if (!e.status) {
-                        this.error = "Unable to connect to API server.<br>Either you have problems with network connection or API server is down."
-                    }
-                }
+                } catch (e) {}
                 this.loading = false
             },
 
@@ -391,14 +383,6 @@
                 }).
                 then(() => {
                     this.loadData()
-                }).
-                catch((err) => {
-                            this.$notification.open({
-                                message: 'Request error',
-                                description: err,
-                                duration: 0,
-                            });
-
                 })
 
                 this.loading = false
