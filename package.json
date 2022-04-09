@@ -14,7 +14,7 @@
     "@nuxtjs/axios": "^5.12.2",
     "ant-design-vue": "^1.7.2",
     "install": "^0.13.0",
-    "moment": "^2.29.1",
+    "moment": "^2.29.2",
     "nuxt": "^2.14.7",
     "vue-masonry": "^0.11.8"
   },
